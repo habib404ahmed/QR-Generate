@@ -1,16 +1,12 @@
 {
-  "rewrites": [
-    {
-      "source": "/api/(.*)",
-      "destination": "/backend/server.js"
+  "services": {
+    "frontend": {
+      "root": "frontend",
+      "framework": "vite"
     },
-    {
-      "source": "/assets/(.*)",
-      "destination": "/frontend/assets/$1"
-    },
-    {
-      "source": "/((?!api|assets|.*\\..*).*)",
-      "destination": "/frontend/index.html"
+    "api": {
+      "root": "backend",
+      "entrypoint": "server.js"
     }
-  ]
+  }
 }
