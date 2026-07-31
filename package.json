@@ -1,8 +1,0 @@
-{
-  "name": "freshers-group-generator",
-  "version": "1.0.0",
-  "private": true,
-  "scripts": {
-    "build": "cd frontend && npm install && npm run build && node -e \"require('fs').copyFileSync('../dist/index.html', '../dist/404.html')\""
-  }
-}
