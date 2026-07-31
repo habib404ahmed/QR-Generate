@@ -117,19 +117,27 @@ const seedDefaults = async () => {
   }
 };
 
+// Middleware to ensure DB connection on Vercel Serverless
+app.use(async (req, res, next) => {
+  try {
+    await connectDB();
+    await seedDefaults();
+    next();
+  } catch (err) {
+    next(err);
+  }
+});
+
 const PORT = process.env.PORT || 5000;
 
-// Start Server & Database on 0.0.0.0
-const startServer = async () => {
-  await connectDB();
-  await seedDefaults();
-
+// Start Server & Database when running standalone
+if (process.env.NODE_ENV !== 'production' || !process.env.VERCEL) {
   server.listen(PORT, '0.0.0.0', () => {
     const localIp = getLocalIpAddress();
     console.log(`\n🚀 Server Running`);
     console.log(`📡 Local API:   http://localhost:${PORT}`);
     console.log(`🌐 Network API: http://${localIp}:${PORT}\n`);
   });
-};
+}
 
-startServer();
+module.exports = app;
