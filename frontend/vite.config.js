@@ -7,6 +7,10 @@ export default defineConfig({
     react(),
     tailwindcss(),
   ],
+  build: {
+    outDir: '../dist',
+    emptyOutDir: true,
+  },
   server: {
     host: '0.0.0.0',
     port: 5173,
