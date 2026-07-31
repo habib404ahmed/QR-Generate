@@ -164,19 +164,6 @@ export default function LandingPage() {
       >
         {/* ══ HERO HEADER ══════════════════════════════════════════════ */}
         <div style={{ textAlign: 'center', marginBottom: 32 }}>
-          {/* Graduation cap icon */}
-          <motion.div
-            initial={{ scale: 0.7, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ type: 'spring', stiffness: 220, delay: 0.1 }}
-            style={styles.logoBox}
-          >
-            <IconGradCap />
-          </motion.div>
-
-          {/* College name */}
-          <p style={styles.collegeName}>{collegeName}</p>
-
           {/* Event Title */}
           <h1 style={styles.heading}>{eventName}</h1>
 
