@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 
-const DEFAULT_ATLAS_URI = 'mongodb+srv://kingofkalilinux404_db_user:admin123@cluster0.x7m7owd.mongodb.net/freshers_db?retryWrites=true&w=majority&appName=Cluster0';
+const DEFAULT_ATLAS_URI =
+  'mongodb+srv://kingofkalilinux404_db_user:DaJJhVwpk9qCsjgp@cluster0.x7m7owd.mongodb.net/freshers_group_generator?retryWrites=true&w=majority';
 
 const connectDB = async () => {
   const mongoURI = process.env.MONGODB_URI || DEFAULT_ATLAS_URI;
@@ -11,9 +12,8 @@ const connectDB = async () => {
 
   try {
     const conn = await mongoose.connect(mongoURI, {
-      serverSelectionTimeoutMS: 8000,
+      serverSelectionTimeoutMS: 10000,
       autoIndex: true,
-      family: 4,
     });
 
     console.log(`MongoDB Connected Successfully: ${conn.connection.host}`);
