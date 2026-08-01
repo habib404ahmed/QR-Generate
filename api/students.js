@@ -19,6 +19,7 @@ const eventSettingsSchema = new mongoose.Schema(
   {
     totalStudents: { type: Number, default: 80 },
     studentsPerGroup: { type: Number, default: 5 },
+    registrationOpen: { type: Boolean, default: true },
   },
   { timestamps: true }
 );
@@ -26,7 +27,7 @@ const eventSettingsSchema = new mongoose.Schema(
 eventSettingsSchema.statics.getSettings = async function () {
   let settings = await this.findOne();
   if (!settings) {
-    settings = await this.create({ totalStudents: 80, studentsPerGroup: 5 });
+    settings = await this.create({ totalStudents: 80, studentsPerGroup: 5, registrationOpen: true });
   }
   return settings;
 };
@@ -80,6 +81,62 @@ module.exports = async (req, res) => {
   try {
     await connectDB();
 
+    const urlParts = (req.url || '').split('?')[0].split('/').filter(Boolean);
+    const lastPart = urlParts[urlParts.length - 1];
+    const isMobileParam = lastPart && lastPart !== 'students' && lastPart !== 'move' && lastPart !== 'add' && lastPart !== 'register';
+
+    // 1. DELETE student by mobile
+    if (req.method === 'DELETE' || (req.method === 'POST' && req.body?._method === 'DELETE')) {
+      const mobile = isMobileParam ? lastPart : req.body?.mobile || req.query?.mobile;
+      if (!mobile) return res.status(400).json({ success: false, message: 'Mobile number is required' });
+
+      const student = await Student.findOneAndDelete({ mobile: String(mobile).trim() });
+      if (!student) {
+        return res.status(404).json({ success: false, message: 'Student record not found' });
+      }
+
+      return res.status(200).json({
+        success: true,
+        message: 'Student record deleted successfully',
+      });
+    }
+
+    // 2. PUT edit student by mobile
+    if (req.method === 'PUT') {
+      const mobile = isMobileParam ? lastPart : req.body?.mobile || req.query?.mobile;
+      const { name, department } = req.body || {};
+
+      const student = await Student.findOne({ mobile: String(mobile).trim() });
+      if (!student) return res.status(404).json({ success: false, message: 'Student record not found' });
+
+      if (name) student.name = String(name).trim();
+      if (department) student.department = String(department).trim();
+
+      await student.save();
+
+      return res.status(200).json({
+        success: true,
+        message: 'Student record updated successfully',
+        data: student,
+      });
+    }
+
+    // 3. POST /move
+    if (req.method === 'POST' && lastPart === 'move') {
+      const { mobile, newGroupNumber } = req.body || {};
+      const student = await Student.findOne({ mobile: String(mobile).trim() });
+      if (!student) return res.status(404).json({ success: false, message: 'Student record not found' });
+
+      student.groupNumber = Number(newGroupNumber);
+      await student.save();
+
+      return res.status(200).json({
+        success: true,
+        message: `Moved ${student.name} to Group ${student.groupNumber}`,
+      });
+    }
+
+    // 4. GET all students
     if (req.method === 'GET') {
       const { search, department, groupNumber } = req.query || {};
       const query = {};
@@ -127,7 +184,7 @@ module.exports = async (req, res) => {
 
     return res.status(405).json({ success: false, message: 'Method Not Allowed' });
   } catch (err) {
-    console.error('[Students GET Error]', err);
+    console.error('[Students API Error]', err);
     return res.status(500).json({ success: false, message: err.message || 'Internal Server Error' });
   }
 };
