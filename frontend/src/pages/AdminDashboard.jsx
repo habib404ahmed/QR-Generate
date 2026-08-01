@@ -162,19 +162,18 @@ function DashboardGroupCard({ num, count, max }) {
     <motion.div
       whileHover={{ borderColor: full ? 'rgba(34,197,94,0.4)' : 'rgba(99,102,241,0.4)', y: -2 }}
       style={{
-        minWidth: 170,
-        minHeight: 130,
-        padding: 18,
+        minHeight: 118,
+        padding: '14px 16px',
         borderRadius: 18,
         background: 'rgba(255,255,255,0.03)',
         border: '1px solid rgba(255,255,255,0.07)',
         display: 'flex',
         flexDirection: 'column',
-        justify: 'space-between',
-        gap: 12,
+        gap: 10,
         transition: 'all 0.2s ease',
         cursor: 'default',
         boxSizing: 'border-box',
+        overflow: 'hidden',
       }}
     >
       {/* Top Header */}
@@ -418,9 +417,9 @@ export default function AdminDashboard() {
             style={{ ...panel, padding: 32, minHeight: 380, display: 'flex', flexDirection: 'column' }}>
             <SectionHeading icon={<IcoGrid />} title="Group Overview" action={{ to: '/admin/groups', label: 'View All Groups' }} />
             
-            {/* Group Cards Grid: 4 cols desktop, 3 tablet, 2 small tablet, 1 mobile (18px gap) */}
-            <div className="dashboard-group-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 18, marginTop: 4 }}>
-              {groupData.slice(0, 8).map(g => (
+            {/* Group Cards Grid: responsive auto-fill, min 140px per card, 16px gap */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16, marginTop: 4 }}>
+              {groupData.slice(0, 6).map(g => (
                 <DashboardGroupCard key={g.num} num={g.num} count={g.count} max={g.max} />
               ))}
             </div>
