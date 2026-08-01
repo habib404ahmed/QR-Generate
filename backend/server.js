@@ -53,8 +53,10 @@ function getLocalIpAddress() {
   return '127.0.0.1';
 }
 
-// Initialize Socket.IO
-initSocket(server);
+// Initialize Socket.IO when running standalone
+if (!process.env.VERCEL) {
+  initSocket(server);
+}
 
 // Middleware
 app.use(helmet({ crossOriginResourcePolicy: false }));
