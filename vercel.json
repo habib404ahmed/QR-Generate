@@ -1,14 +1,12 @@
 {
-  "buildCommand": "cd frontend && npm install && npm run build",
-  "outputDirectory": "frontend/dist",
-  "rewrites": [
-    {
-      "source": "/api/(.*)",
-      "destination": "/api"
+  "services": {
+    "frontend": {
+      "root": "frontend",
+      "framework": "vite"
     },
-    {
-      "source": "/((?!assets|.*\\..*).*)",
-      "destination": "/index.html"
+    "backend": {
+      "root": "backend",
+      "entrypoint": "server.js"
     }
-  ]
+  }
 }
