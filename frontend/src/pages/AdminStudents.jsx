@@ -638,36 +638,290 @@ export default function AdminStudents() {
         </div>
       )}
 
-      <Modal isOpen={!!editModal} onClose={() => setEditModal(null)} title="Edit Student Record">
-        <div className="space-y-[24px] mb-6">
-          <Input label="FULL NAME" value={editForm.name || ''} onChange={(e) => setEditForm((f) => ({ ...f, name: e.target.value }))} />
-          <Select
-            label="DEPARTMENT"
-            value={editForm.department || ''}
-            onChange={(e) => setEditForm((f) => ({ ...f, department: e.target.value }))}
-            options={deptOptions}
-          />
-        </div>
-        <div className="flex gap-4">
-          <Button variant="secondary" onClick={() => setEditModal(null)} fullWidth>Cancel</Button>
-          <Button onClick={handleEdit} loading={actionLoading} fullWidth>Save Changes</Button>
-        </div>
-      </Modal>
+      {/* ── Premium Edit Modal ── */}
+      {editModal && (
+        <div
+          onClick={() => setEditModal(null)}
+          style={{
+            position: 'fixed', inset: 0, zIndex: 1000,
+            background: 'rgba(0,0,0,0.75)',
+            backdropFilter: 'blur(8px)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            padding: 20,
+          }}
+        >
+          <motion.div
+            initial={{ scale: 0.88, opacity: 0, y: 20 }}
+            animate={{ scale: 1, opacity: 1, y: 0 }}
+            transition={{ type: 'spring', damping: 22, stiffness: 320 }}
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              background: 'linear-gradient(145deg, #1a1a2e 0%, #0f172a 100%)',
+              border: '1px solid rgba(99,102,241,0.25)',
+              borderRadius: 24,
+              padding: 36,
+              width: '100%',
+              maxWidth: 460,
+              boxShadow: '0 32px 80px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.06)',
+              position: 'relative',
+              overflow: 'hidden',
+            }}
+          >
+            {/* Purple glow accent */}
+            <div style={{
+              position: 'absolute', top: -60, right: -60,
+              width: 200, height: 200, borderRadius: '50%',
+              background: 'radial-gradient(circle, rgba(99,102,241,0.12) 0%, transparent 70%)',
+              pointerEvents: 'none',
+            }} />
 
-      <Modal isOpen={!!moveModal} onClose={() => setMoveModal(null)} title={`Move ${moveModal?.student.name}`}>
-        <div className="mb-6">
-          <Select
-            label="MOVE TO GROUP"
-            value={moveGroup}
-            onChange={(e) => setMoveGroup(e.target.value)}
-            options={groupOptions.map((g) => ({ value: g, label: `Group ${g}` }))}
-          />
+            {/* Edit Icon */}
+            <div style={{
+              width: 56, height: 56, borderRadius: 16,
+              background: 'rgba(99,102,241,0.12)',
+              border: '1px solid rgba(99,102,241,0.3)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              marginBottom: 20,
+            }}>
+              <Edit2 style={{ width: 24, height: 24, color: '#818cf8' }} />
+            </div>
+
+            {/* Title + student name */}
+            <h3 style={{ color: '#ffffff', fontSize: 22, fontWeight: 800, fontFamily: 'Space Grotesk, sans-serif', margin: '0 0 4px' }}>
+              Edit Student Record
+            </h3>
+            <p style={{ color: '#6b7280', fontSize: 14, margin: '0 0 28px' }}>
+              {editModal.student.name} · {editModal.student.mobile}
+            </p>
+
+            {/* Full Name field */}
+            <div style={{ marginBottom: 20 }}>
+              <label style={{ display: 'block', fontSize: 12, fontWeight: 700, letterSpacing: '0.1em', color: '#9ca3af', textTransform: 'uppercase', marginBottom: 8 }}>
+                Full Name
+              </label>
+              <input
+                type="text"
+                value={editForm.name || ''}
+                onChange={(e) => setEditForm((f) => ({ ...f, name: e.target.value }))}
+                style={{
+                  width: '100%', height: 52, padding: '0 18px',
+                  borderRadius: 14,
+                  background: 'rgba(255,255,255,0.05)',
+                  border: '1px solid rgba(255,255,255,0.12)',
+                  color: '#f9fafb', fontSize: 16, fontWeight: 600,
+                  outline: 'none', boxSizing: 'border-box',
+                  transition: 'border-color 0.2s, box-shadow 0.2s',
+                }}
+                onFocus={(e) => { e.target.style.borderColor = '#6366f1'; e.target.style.boxShadow = '0 0 0 3px rgba(99,102,241,0.2)'; }}
+                onBlur={(e) => { e.target.style.borderColor = 'rgba(255,255,255,0.12)'; e.target.style.boxShadow = 'none'; }}
+              />
+            </div>
+
+            {/* Department select */}
+            <div style={{ marginBottom: 32 }}>
+              <label style={{ display: 'block', fontSize: 12, fontWeight: 700, letterSpacing: '0.1em', color: '#9ca3af', textTransform: 'uppercase', marginBottom: 8 }}>
+                Department
+              </label>
+              <div style={{ position: 'relative' }}>
+                <select
+                  value={editForm.department || ''}
+                  onChange={(e) => setEditForm((f) => ({ ...f, department: e.target.value }))}
+                  style={{
+                    width: '100%', height: 52, padding: '0 44px 0 18px',
+                    borderRadius: 14,
+                    background: 'rgba(255,255,255,0.05)',
+                    border: '1px solid rgba(255,255,255,0.12)',
+                    color: editForm.department ? '#f9fafb' : '#6b7280',
+                    fontSize: 16, fontWeight: 600,
+                    outline: 'none', cursor: 'pointer',
+                    WebkitAppearance: 'none', appearance: 'none',
+                    boxSizing: 'border-box',
+                  }}
+                >
+                  <option value="" style={{ background: '#1a1a2e' }}>Select Department</option>
+                  {deptOptions.map((d) => (
+                    <option key={d} value={d} style={{ background: '#1a1a2e', color: '#f9fafb' }}>{d}</option>
+                  ))}
+                </select>
+                <svg style={{ position: 'absolute', right: 16, top: '50%', transform: 'translateY(-50%)', width: 18, height: 18, color: '#6b7280', pointerEvents: 'none' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 9l-7 7-7-7" />
+                </svg>
+              </div>
+            </div>
+
+            {/* Action buttons */}
+            <div style={{ display: 'flex', gap: 12 }}>
+              <button
+                onClick={() => setEditModal(null)}
+                disabled={actionLoading}
+                style={{
+                  flex: 1, height: 50, borderRadius: 14,
+                  border: '1px solid rgba(255,255,255,0.12)',
+                  background: 'rgba(255,255,255,0.06)',
+                  color: '#e5e7eb', fontSize: 15, fontWeight: 700,
+                  cursor: 'pointer', transition: 'all 0.15s',
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'}
+                onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.06)'}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleEdit}
+                disabled={actionLoading}
+                style={{
+                  flex: 1, height: 50, borderRadius: 14, border: 'none',
+                  background: actionLoading ? 'rgba(99,102,241,0.4)' : 'linear-gradient(135deg, #4f46e5, #7c3aed)',
+                  color: '#ffffff', fontSize: 15, fontWeight: 800,
+                  cursor: actionLoading ? 'not-allowed' : 'pointer',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                  boxShadow: actionLoading ? 'none' : '0 4px 20px rgba(79,70,229,0.4)',
+                  transition: 'all 0.15s',
+                }}
+                onMouseEnter={(e) => { if (!actionLoading) e.currentTarget.style.transform = 'translateY(-1px)'; }}
+                onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
+              >
+                {actionLoading ? (
+                  <><div style={{ width: 16, height: 16, border: '2px solid rgba(255,255,255,0.4)', borderTopColor: '#fff', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} /> Saving...</>
+                ) : (
+                  <><Edit2 style={{ width: 16, height: 16 }} /> Save Changes</>
+                )}
+              </button>
+            </div>
+          </motion.div>
         </div>
-        <div className="flex gap-4">
-          <Button variant="secondary" onClick={() => setMoveModal(null)} fullWidth>Cancel</Button>
-          <Button onClick={handleMove} loading={actionLoading} fullWidth>Move Student</Button>
+      )}
+
+      {/* ── Premium Move Group Modal ── */}
+      {moveModal && (
+        <div
+          onClick={() => setMoveModal(null)}
+          style={{
+            position: 'fixed', inset: 0, zIndex: 1000,
+            background: 'rgba(0,0,0,0.75)',
+            backdropFilter: 'blur(8px)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            padding: 20,
+          }}
+        >
+          <motion.div
+            initial={{ scale: 0.88, opacity: 0, y: 20 }}
+            animate={{ scale: 1, opacity: 1, y: 0 }}
+            transition={{ type: 'spring', damping: 22, stiffness: 320 }}
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              background: 'linear-gradient(145deg, #1a1a2e 0%, #0f172a 100%)',
+              border: '1px solid rgba(245,158,11,0.25)',
+              borderRadius: 24,
+              padding: 36,
+              width: '100%',
+              maxWidth: 420,
+              boxShadow: '0 32px 80px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.06)',
+              position: 'relative',
+              overflow: 'hidden',
+            }}
+          >
+            {/* Amber glow accent */}
+            <div style={{
+              position: 'absolute', top: -60, right: -60,
+              width: 180, height: 180, borderRadius: '50%',
+              background: 'radial-gradient(circle, rgba(245,158,11,0.12) 0%, transparent 70%)',
+              pointerEvents: 'none',
+            }} />
+
+            {/* Move Icon */}
+            <div style={{
+              width: 56, height: 56, borderRadius: 16,
+              background: 'rgba(245,158,11,0.12)',
+              border: '1px solid rgba(245,158,11,0.3)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              marginBottom: 20,
+            }}>
+              <MoveRight style={{ width: 26, height: 26, color: '#fbbf24' }} />
+            </div>
+
+            <h3 style={{ color: '#ffffff', fontSize: 22, fontWeight: 800, fontFamily: 'Space Grotesk, sans-serif', margin: '0 0 4px' }}>
+              Move to Group
+            </h3>
+            <p style={{ color: '#6b7280', fontSize: 14, margin: '0 0 28px' }}>
+              Moving <strong style={{ color: '#e5e7eb' }}>{moveModal.student.name}</strong> from Group {moveModal.student.groupNumber || moveModal.student.group_number}
+            </p>
+
+            {/* Group select */}
+            <div style={{ marginBottom: 32 }}>
+              <label style={{ display: 'block', fontSize: 12, fontWeight: 700, letterSpacing: '0.1em', color: '#9ca3af', textTransform: 'uppercase', marginBottom: 8 }}>
+                Select New Group
+              </label>
+              <div style={{ position: 'relative' }}>
+                <select
+                  value={moveGroup}
+                  onChange={(e) => setMoveGroup(e.target.value)}
+                  style={{
+                    width: '100%', height: 52, padding: '0 44px 0 18px',
+                    borderRadius: 14,
+                    background: 'rgba(255,255,255,0.05)',
+                    border: '1px solid rgba(255,255,255,0.12)',
+                    color: moveGroup ? '#f9fafb' : '#6b7280',
+                    fontSize: 16, fontWeight: 600,
+                    outline: 'none', cursor: 'pointer',
+                    WebkitAppearance: 'none', appearance: 'none',
+                    boxSizing: 'border-box',
+                  }}
+                >
+                  {groupOptions.map((g) => (
+                    <option key={g} value={g} style={{ background: '#1a1a2e', color: '#f9fafb' }}>Group {g}</option>
+                  ))}
+                </select>
+                <svg style={{ position: 'absolute', right: 16, top: '50%', transform: 'translateY(-50%)', width: 18, height: 18, color: '#6b7280', pointerEvents: 'none' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 9l-7 7-7-7" />
+                </svg>
+              </div>
+            </div>
+
+            {/* Action buttons */}
+            <div style={{ display: 'flex', gap: 12 }}>
+              <button
+                onClick={() => setMoveModal(null)}
+                disabled={actionLoading}
+                style={{
+                  flex: 1, height: 50, borderRadius: 14,
+                  border: '1px solid rgba(255,255,255,0.12)',
+                  background: 'rgba(255,255,255,0.06)',
+                  color: '#e5e7eb', fontSize: 15, fontWeight: 700,
+                  cursor: 'pointer', transition: 'all 0.15s',
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'}
+                onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.06)'}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleMove}
+                disabled={actionLoading || !moveGroup}
+                style={{
+                  flex: 1, height: 50, borderRadius: 14, border: 'none',
+                  background: (actionLoading || !moveGroup) ? 'rgba(245,158,11,0.3)' : 'linear-gradient(135deg, #d97706, #f59e0b)',
+                  color: '#fff', fontSize: 15, fontWeight: 800,
+                  cursor: (actionLoading || !moveGroup) ? 'not-allowed' : 'pointer',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                  boxShadow: (actionLoading || !moveGroup) ? 'none' : '0 4px 20px rgba(245,158,11,0.35)',
+                  transition: 'all 0.15s',
+                }}
+                onMouseEnter={(e) => { if (!actionLoading && moveGroup) e.currentTarget.style.transform = 'translateY(-1px)'; }}
+                onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
+              >
+                {actionLoading ? (
+                  <><div style={{ width: 16, height: 16, border: '2px solid rgba(255,255,255,0.4)', borderTopColor: '#fff', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} /> Moving...</>
+                ) : (
+                  <><MoveRight style={{ width: 16, height: 16 }} /> Move Student</>
+                )}
+              </button>
+            </div>
+          </motion.div>
         </div>
-      </Modal>
+      )}
+
+
 
       {/* Redesigned Add Student Modal */}
       <AddStudentModal
