@@ -139,8 +139,8 @@ app.use(async (req, res, next) => {
 
 const PORT = process.env.PORT || 5000;
 
-// Start Server & Database when running standalone
-if (process.env.NODE_ENV !== 'production' || !process.env.VERCEL) {
+// Start Server & Database ONLY when executed directly (node server.js)
+if (require.main === module) {
   server.listen(PORT, '0.0.0.0', () => {
     const localIp = getLocalIpAddress();
     console.log(`\n🚀 Server Running`);
