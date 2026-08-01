@@ -109,8 +109,12 @@ export default function AdminSettings() {
       await updateSettings({ ...data, departments: form.departments });
       toast.success('Event & Network settings saved successfully!');
       setWarnModal(false);
-      const res = await networkAPI.getInfo();
-      setNetworkInfo(res.data);
+      try {
+        const res = await networkAPI.getInfo();
+        setNetworkInfo(res.data);
+      } catch (e) {
+        console.warn('Network info update skipped:', e.message);
+      }
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to save settings');
     } finally {
