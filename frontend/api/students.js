@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const jwt = require('jsonwebtoken');
 
 const DEFAULT_ATLAS_URI =
   'mongodb+srv://kingofkalilinux404_db_user:DaJJhVwpk9qCsjgp@cluster0.x7m7owd.mongodb.net/freshers_group_generator?retryWrites=true&w=majority';
@@ -89,6 +90,17 @@ function extractMobile(req) {
   return mobile ? String(mobile).trim() : null;
 }
 
+function verifyToken(req) {
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith('Bearer ')) return null;
+  const token = authHeader.split(' ')[1];
+  try {
+    return jwt.verify(token, process.env.JWT_SECRET || 'freshers_super_secret_2026_change_me');
+  } catch {
+    return null;
+  }
+}
+
 module.exports = async (req, res) => {
   res.setHeader('Access-Control-Allow-Credentials', 'true');
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -106,8 +118,9 @@ module.exports = async (req, res) => {
     const mobile = extractMobile(req);
     const cleanUrl = (req.url || '').split('?')[0];
 
-    // 1. DELETE student by mobile
+    // 1. DELETE student by mobile (admin only)
     if (req.method === 'DELETE' || (req.method === 'POST' && req.body?._method === 'DELETE')) {
+      if (!verifyToken(req)) return res.status(401).json({ success: false, message: 'Access denied. No token provided.' });
       if (!mobile) return res.status(400).json({ success: false, message: 'Mobile number is required' });
 
       const student = await Student.findOneAndDelete({ mobile });
@@ -121,8 +134,9 @@ module.exports = async (req, res) => {
       });
     }
 
-    // 2. PUT edit student by mobile
+    // 2. PUT edit student by mobile (admin only)
     if (req.method === 'PUT') {
+      if (!verifyToken(req)) return res.status(401).json({ success: false, message: 'Access denied. No token provided.' });
       if (!mobile) return res.status(400).json({ success: false, message: 'Mobile number is required' });
 
       const { name, department } = req.body || {};
