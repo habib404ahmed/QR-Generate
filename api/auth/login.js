@@ -6,54 +6,59 @@ const DEFAULT_ATLAS_URI =
   'mongodb+srv://kingofkalilinux404_db_user:DaJJhVwpk9qCsjgp@cluster0.x7m7owd.mongodb.net/freshers_group_generator?retryWrites=true&w=majority';
 
 // Mongoose Admin Schema
-const adminSchema = new mongoose.Schema(
-  {
-    username: { type: String, required: true, unique: true, lowercase: true, trim: true },
-    password: { type: String, required: true },
-    role: { type: String, default: 'superadmin' },
-  },
-  { timestamps: true }
-);
+let Admin;
+try {
+  const adminSchema = new mongoose.Schema(
+    {
+      username: { type: String, required: true, unique: true, lowercase: true, trim: true },
+      password: { type: String, required: true },
+      role: { type: String, default: 'superadmin' },
+    },
+    { timestamps: true }
+  );
 
-adminSchema.pre('save', async function () {
-  if (!this.isModified('password')) return;
-  const salt = await bcrypt.genSalt(10);
-  this.password = await bcrypt.hash(this.password, salt);
-});
+  adminSchema.pre('save', async function () {
+    if (!this.isModified('password')) return;
+    const salt = await bcrypt.genSalt(10);
+    this.password = await bcrypt.hash(this.password, salt);
+  });
 
-adminSchema.methods.comparePassword = async function (enteredPassword) {
-  return await bcrypt.compare(enteredPassword, this.password);
-};
+  adminSchema.methods.comparePassword = async function (enteredPassword) {
+    return await bcrypt.compare(enteredPassword, this.password);
+  };
 
-const Admin = mongoose.models.Admin || mongoose.model('Admin', adminSchema);
+  Admin = mongoose.models.Admin || mongoose.model('Admin', adminSchema);
+} catch (e) {
+  Admin = mongoose.models.Admin;
+}
 
 async function connectDB() {
   if (mongoose.connection.readyState !== 1) {
     await mongoose.connect(process.env.MONGODB_URI || DEFAULT_ATLAS_URI, {
-      serverSelectionTimeoutMS: 10000,
+      serverSelectionTimeoutMS: 5000,
     });
   }
 }
 
 module.exports = async (req, res) => {
-  // Enable CORS
-  res.setHeader('Access-Control-Allow-Credentials', 'true');
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
-  res.setHeader(
-    'Access-Control-Allow-Headers',
-    'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Authorization'
-  );
-
-  if (req.method === 'OPTIONS') {
-    return res.status(200).end();
-  }
-
-  if (req.method !== 'POST') {
-    return res.status(405).json({ success: false, message: 'Method Not Allowed' });
-  }
-
   try {
+    // Enable CORS
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
+    res.setHeader(
+      'Access-Control-Allow-Headers',
+      'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Authorization'
+    );
+
+    if (req.method === 'OPTIONS') {
+      return res.status(200).end();
+    }
+
+    if (req.method !== 'POST') {
+      return res.status(405).json({ success: false, message: 'Method Not Allowed' });
+    }
+
     await connectDB();
 
     const { username, password } = req.body || {};
@@ -93,6 +98,6 @@ module.exports = async (req, res) => {
     });
   } catch (err) {
     console.error('[Login Error]', err);
-    return res.status(500).json({ success: false, message: err.message || 'Internal Server Error' });
+    return res.status(500).json({ success: false, message: err.message || 'Internal Error', stack: err.stack });
   }
 };
