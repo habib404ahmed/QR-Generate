@@ -67,6 +67,28 @@ async function getGroupCounters() {
   return { totalStudents, studentsPerGroup, totalGroups, groups };
 }
 
+function extractMobile(req) {
+  let mobile = req.query?.mobile;
+  const cleanUrl = (req.url || '').split('?')[0];
+  const matches = cleanUrl.match(/\/(\d{10})/);
+
+  if (matches) {
+    mobile = matches[1];
+  } else if (!mobile || mobile === 'students') {
+    const parts = cleanUrl.split('/').filter(Boolean);
+    const last = parts[parts.length - 1];
+    if (last && last !== 'students' && last !== 'register' && last !== 'move' && last !== 'add') {
+      mobile = last;
+    }
+  }
+
+  if (!mobile && req.body?.mobile) {
+    mobile = req.body.mobile;
+  }
+
+  return mobile ? String(mobile).trim() : null;
+}
+
 module.exports = async (req, res) => {
   res.setHeader('Access-Control-Allow-Credentials', 'true');
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -81,16 +103,14 @@ module.exports = async (req, res) => {
   try {
     await connectDB();
 
-    const urlParts = (req.url || '').split('?')[0].split('/').filter(Boolean);
-    const lastPart = urlParts[urlParts.length - 1];
-    const isMobileParam = lastPart && lastPart !== 'students' && lastPart !== 'move' && lastPart !== 'add' && lastPart !== 'register';
+    const mobile = extractMobile(req);
+    const cleanUrl = (req.url || '').split('?')[0];
 
     // 1. DELETE student by mobile
     if (req.method === 'DELETE' || (req.method === 'POST' && req.body?._method === 'DELETE')) {
-      const mobile = isMobileParam ? lastPart : req.body?.mobile || req.query?.mobile;
       if (!mobile) return res.status(400).json({ success: false, message: 'Mobile number is required' });
 
-      const student = await Student.findOneAndDelete({ mobile: String(mobile).trim() });
+      const student = await Student.findOneAndDelete({ mobile });
       if (!student) {
         return res.status(404).json({ success: false, message: 'Student record not found' });
       }
@@ -103,10 +123,10 @@ module.exports = async (req, res) => {
 
     // 2. PUT edit student by mobile
     if (req.method === 'PUT') {
-      const mobile = isMobileParam ? lastPart : req.body?.mobile || req.query?.mobile;
-      const { name, department } = req.body || {};
+      if (!mobile) return res.status(400).json({ success: false, message: 'Mobile number is required' });
 
-      const student = await Student.findOne({ mobile: String(mobile).trim() });
+      const { name, department } = req.body || {};
+      const student = await Student.findOne({ mobile });
       if (!student) return res.status(404).json({ success: false, message: 'Student record not found' });
 
       if (name) student.name = String(name).trim();
@@ -122,9 +142,10 @@ module.exports = async (req, res) => {
     }
 
     // 3. POST /move
-    if (req.method === 'POST' && lastPart === 'move') {
-      const { mobile, newGroupNumber } = req.body || {};
-      const student = await Student.findOne({ mobile: String(mobile).trim() });
+    if (req.method === 'POST' && cleanUrl.endsWith('/move')) {
+      const { mobile: bodyMobile, newGroupNumber } = req.body || {};
+      const targetMobile = mobile || bodyMobile;
+      const student = await Student.findOne({ mobile: String(targetMobile).trim() });
       if (!student) return res.status(404).json({ success: false, message: 'Student record not found' });
 
       student.groupNumber = Number(newGroupNumber);
