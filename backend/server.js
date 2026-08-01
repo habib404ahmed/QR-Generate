@@ -98,16 +98,9 @@ const seedDefaults = async () => {
     let admin = await Admin.findOne({ username });
     if (!admin) {
       await Admin.create({ username, password, role: 'superadmin' });
-      console.log(`[Seed] Default Admin created: ${username} / ${password}`);
+      console.log(`[Seed] Default Admin created: ${username}`);
     } else {
-      const isMatch = await admin.comparePassword(password);
-      if (!isMatch) {
-        admin.password = password;
-        await admin.save();
-        console.log(`[Seed] Default Admin password reset to: ${password}`);
-      } else {
-        console.log(`[Seed] Default Admin verified: ${username}`);
-      }
+      console.log(`[Seed] Admin verified: ${username}`);
     }
 
     await EventSettings.getSettings();
