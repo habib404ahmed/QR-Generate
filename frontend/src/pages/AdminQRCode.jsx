@@ -38,29 +38,34 @@ export default function AdminQRCode() {
   // Fetch Auto-detected Network Info on Mount
   useEffect(() => {
     const fetchNetworkInfo = async () => {
+      const isVercel = window.location.hostname.endsWith('vercel.app') || window.location.protocol === 'https:';
+      const prodUrl = `${window.location.origin}/register`;
+
+      if (isVercel) {
+        setUrl(prodUrl);
+        return;
+      }
+
       try {
         const res = await networkAPI.getInfo();
         const data = res.data;
         setNetworkData(data);
 
-        // Saved custom URL or default to Network IP URL (never 192.168.56.x, 10.27.x, or localhost)
         const saved = localStorage.getItem('saved_qr_registration_url');
-        if (saved && (saved.includes('192.168.56.') || saved.includes('10.27.'))) {
+        if (saved && (saved.includes('192.168.56.') || saved.includes('10.27.') || saved.includes(':5173'))) {
           localStorage.removeItem('saved_qr_registration_url');
         }
 
         const validSaved = localStorage.getItem('saved_qr_registration_url');
-        if (validSaved && !validSaved.includes('localhost') && !validSaved.includes('127.0.0.1') && !validSaved.includes('192.168.56.') && !validSaved.includes('10.27.')) {
+        if (validSaved && !validSaved.includes('localhost') && !validSaved.includes('127.0.0.1')) {
           setUrl(validSaved);
-        } else if (data.networkRegistrationUrl) {
+        } else if (data?.networkRegistrationUrl) {
           setUrl(data.networkRegistrationUrl);
         } else {
-          setUrl(`http://${window.location.hostname}:5173/`);
+          setUrl(`${window.location.origin}/register`);
         }
       } catch {
-        // Fallback to current browser hostname if backend endpoint fails
-        const fallback = `http://${window.location.hostname || '192.168.1.100'}:5173/`;
-        setUrl(fallback);
+        setUrl(prodUrl);
       }
     };
 
@@ -76,15 +81,20 @@ export default function AdminQRCode() {
     }
   }, [url]);
 
-  // Reset to auto-detected local network IP URL
+  // Reset to auto-detected network IP / Production URL
   const handleResetToNetworkIP = () => {
-    if (networkData?.networkRegistrationUrl) {
+    const isVercel = window.location.hostname.endsWith('vercel.app') || window.location.protocol === 'https:';
+    if (isVercel) {
+      const prodUrl = `${window.location.origin}/register`;
+      setUrl(prodUrl);
+      toast.success(`Reset URL to Vercel Production: ${prodUrl}`);
+    } else if (networkData?.networkRegistrationUrl) {
       setUrl(networkData.networkRegistrationUrl);
       toast.success(`Reset URL to Local Network IP: ${networkData.networkRegistrationUrl}`);
     } else {
-      const fallback = `http://${window.location.hostname}:5173/`;
+      const fallback = `${window.location.origin}/register`;
       setUrl(fallback);
-      toast.success('Reset URL to Network address');
+      toast.success('Reset URL to Registration address');
     }
   };
 

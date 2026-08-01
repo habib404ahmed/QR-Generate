@@ -38,24 +38,29 @@ module.exports = async (req, res) => {
     const mode = settings?.networkMode || 'public';
     const publicDomain = settings?.publicDomain || '';
 
+    const host = req.headers.host || 'qr-generate-wheat.vercel.app';
+    const protocol = req.headers['x-forwarded-proto'] || 'https';
+    const baseUrl = `${protocol}://${host}`;
+    const registerUrl = `${baseUrl}/register`;
+
     return res.status(200).json({
       success: true,
       data: {
         mode: mode,
         publicDomain,
-        port: 5000,
-        activeUrl: 'https://qr-generate-wheat.vercel.app',
+        port: 443,
+        activeUrl: baseUrl,
       },
       networkMode: mode,
       publicDomain: publicDomain,
       localIp: '127.0.0.1',
       allInterfaces: [],
-      frontendPort: 5173,
-      backendPort: 5000,
-      activeRegistrationUrl: 'https://qr-generate-wheat.vercel.app/register',
-      networkRegistrationUrl: 'https://qr-generate-wheat.vercel.app/register',
-      localRegistrationUrl: 'https://qr-generate-wheat.vercel.app/register',
-      networkBackendUrl: 'https://qr-generate-wheat.vercel.app/api',
+      frontendPort: 443,
+      backendPort: 443,
+      activeRegistrationUrl: registerUrl,
+      networkRegistrationUrl: registerUrl,
+      localRegistrationUrl: registerUrl,
+      networkBackendUrl: `${baseUrl}/api`,
       frontendStatus: 'Running',
       backendStatus: 'Running',
       dbStatus: 'MongoDB Connected',
