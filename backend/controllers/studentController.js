@@ -36,6 +36,9 @@ const register = async (req, res, next) => {
       groupNumber: result.groupNumber,
     });
   } catch (err) {
+    if (err.message === 'INVALID_INPUT') {
+      return res.status(400).json({ success: false, message: 'Please enter valid Name, Department, and 10-digit Mobile number.' });
+    }
     if (err.message === 'REGISTRATION_CLOSED') {
       return res.status(403).json({ success: false, message: 'Registration is currently closed.' });
     }

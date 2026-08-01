@@ -11,7 +11,13 @@ const EventSettings = require('../models/EventSettings');
  * - Automatically creates new groups up to totalGroups
  */
 async function assignGroup({ name, department, mobile }) {
-  const cleanMobile = mobile.trim();
+  const cleanName = String(name || '').trim();
+  const cleanDept = String(department || '').trim();
+  const cleanMobile = String(mobile || '').trim();
+
+  if (!cleanName || !cleanDept || !cleanMobile) {
+    throw new Error('INVALID_INPUT');
+  }
 
   // 1. Check duplicate mobile number
   const existing = await Student.findOne({ mobile: cleanMobile });
@@ -71,8 +77,8 @@ async function assignGroup({ name, department, mobile }) {
 
   // 8. Create student document in MongoDB
   const student = await Student.create({
-    name: name.trim(),
-    department: department.trim(),
+    name: cleanName,
+    department: cleanDept,
     mobile: cleanMobile,
     groupNumber,
     registeredDate: dateStr,
@@ -103,15 +109,22 @@ async function getGroupCounters() {
     countMap[g._id] = g.count;
   });
 
-  const map = {};
+  const groups = [];
   for (let i = 1; i <= totalGroups; i++) {
-    map[`group_${i}`] = {
+    groups.push({
+      groupNumber: i,
       count: countMap[i] || 0,
-      max: studentsPerGroup,
-    };
+      maxCapacity: studentsPerGroup,
+      isFull: (countMap[i] || 0) >= studentsPerGroup,
+    });
   }
 
-  return map;
+  return {
+    totalStudents,
+    studentsPerGroup,
+    totalGroups,
+    groups,
+  };
 }
 
 module.exports = {
