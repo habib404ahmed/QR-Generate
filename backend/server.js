@@ -117,11 +117,16 @@ const seedDefaults = async () => {
   }
 };
 
+let isDbInitialized = false;
+
 // Middleware to ensure DB connection on Vercel Serverless
 app.use(async (req, res, next) => {
   try {
     await connectDB();
-    await seedDefaults();
+    if (!isDbInitialized) {
+      await seedDefaults();
+      isDbInitialized = true;
+    }
     next();
   } catch (err) {
     next(err);
