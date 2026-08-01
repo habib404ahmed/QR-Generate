@@ -35,21 +35,32 @@ module.exports = async (req, res) => {
   try {
     await connectDB();
     let settings = await EventSettings.findOne();
-    const networkMode = settings?.networkMode || 'public';
+    const mode = settings?.networkMode || 'public';
     const publicDomain = settings?.publicDomain || '';
 
     return res.status(200).json({
       success: true,
       data: {
-        mode: networkMode,
+        mode: mode,
         publicDomain,
         port: 5000,
         activeUrl: 'https://qr-generate-wheat.vercel.app',
       },
-      mode: networkMode,
-      publicDomain,
-      port: 5000,
-      activeUrl: 'https://qr-generate-wheat.vercel.app',
+      networkMode: mode,
+      publicDomain: publicDomain,
+      localIp: '127.0.0.1',
+      allInterfaces: [],
+      frontendPort: 5173,
+      backendPort: 5000,
+      activeRegistrationUrl: 'https://qr-generate-wheat.vercel.app/register',
+      networkRegistrationUrl: 'https://qr-generate-wheat.vercel.app/register',
+      localRegistrationUrl: 'https://qr-generate-wheat.vercel.app/register',
+      networkBackendUrl: 'https://qr-generate-wheat.vercel.app/api',
+      frontendStatus: 'Running',
+      backendStatus: 'Running',
+      dbStatus: 'MongoDB Connected',
+      qrStatus: 'Ready',
+      timestamp: new Date(),
     });
   } catch (err) {
     return res.status(500).json({ success: false, message: err.message });
