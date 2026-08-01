@@ -6,20 +6,20 @@ const DEFAULT_ATLAS_URI =
 const connectDB = async () => {
   const mongoURI = process.env.MONGODB_URI || DEFAULT_ATLAS_URI;
 
-  if (mongoose.connection.readyState === 1) {
+  if (mongoose.connection.readyState === 1 || mongoose.connection.readyState === 2) {
     return;
   }
 
   try {
     const conn = await mongoose.connect(mongoURI, {
-      serverSelectionTimeoutMS: 10000,
+      serverSelectionTimeoutMS: 6000,
+      connectTimeoutMS: 6000,
       autoIndex: true,
     });
 
     console.log(`MongoDB Connected Successfully: ${conn.connection.host}`);
   } catch (error) {
     console.error(`MongoDB Connection Failed: ${error.message}`);
-    throw error;
   }
 };
 

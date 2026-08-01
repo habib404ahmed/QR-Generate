@@ -116,14 +116,14 @@ let isDbInitialized = false;
 app.use(async (req, res, next) => {
   try {
     await connectDB();
-    if (!isDbInitialized) {
+    if (!isDbInitialized && mongoose.connection.readyState === 1) {
       await seedDefaults();
       isDbInitialized = true;
     }
-    next();
   } catch (err) {
-    next(err);
+    console.error('[Middleware DB Error]', err.message);
   }
+  next();
 });
 
 const PORT = process.env.PORT || 5000;
