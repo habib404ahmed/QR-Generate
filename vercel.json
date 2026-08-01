@@ -1,10 +1,14 @@
 {
-  "services": {
-    "frontend": {
-      "root": "frontend"
+  "buildCommand": "cd frontend && npm install && npm run build",
+  "outputDirectory": "frontend/dist",
+  "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": "/api"
     },
-    "backend": {
-      "root": "backend"
+    {
+      "source": "/((?!assets|.*\\..*).*)",
+      "destination": "/index.html"
     }
-  }
+  ]
 }
