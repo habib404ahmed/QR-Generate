@@ -1,5 +1,5 @@
 // Admin Students Directory — Premium SaaS Layout matching all spec requirements
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Search, Download, FileSpreadsheet, Trash2, Edit2, MoveRight, UserPlus, UserCheck, GraduationCap, Phone, Calendar } from 'lucide-react';
 import AdminLayout from '../components/layout/AdminLayout';
@@ -17,6 +17,15 @@ import toast from 'react-hot-toast';
 export default function AdminStudents() {
   const { students, loading, refetch } = useStudents();
   const { settings } = useEventSettings();
+
+  // Responsive breakpoint
+  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+  useEffect(() => {
+    const onResize = () => setWindowWidth(window.innerWidth);
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
+  const isMobile = windowWidth < 768;
 
   const [search, setSearch] = useState('');
   const [filterDept, setFilterDept] = useState('');
@@ -353,8 +362,8 @@ export default function AdminStudents() {
             </div>
           ) : (
             <>
-              {/* Desktop Table View (>= 768px) */}
-              <div className="hidden md:block" style={{ overflowX: 'auto', maxHeight: 650 }}>
+              {/* Desktop Table View */}
+              <div style={{ display: isMobile ? 'none' : 'block', overflowX: 'auto', maxHeight: 650 }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse', tableLayout: 'fixed' }}>
                   <colgroup>
                     <col style={{ width: 60 }} />
@@ -449,7 +458,7 @@ export default function AdminStudents() {
               </div>
 
               {/* Mobile Student Card View (< 768px) */}
-              <div className="block md:hidden" style={{ padding: 16, display: 'flex', flexDirection: 'column', gap: 14 }}>
+              <div style={{ display: isMobile ? 'flex' : 'none', padding: 16, flexDirection: 'column', gap: 14 }}>
                 {filtered.map((student, i) => {
                   const gNum = student.groupNumber || student.group_number;
                   return (
@@ -499,16 +508,135 @@ export default function AdminStudents() {
 
       </div>
 
-      {/* Modals */}
-      <Modal
-        isOpen={!!deleteModal}
-        onClose={() => setDeleteModal(null)}
-        onConfirm={handleDelete}
-        title="Delete Student Record"
-        message={`Are you sure you want to delete ${deleteModal?.student.name}? This will free up their slot in Group ${deleteModal?.student.groupNumber || deleteModal?.student.group_number}.`}
-        confirmText={actionLoading ? 'Deleting...' : 'Delete Student'}
-        confirmVariant="danger"
-      />
+      {/* ── Premium Delete Confirmation Modal ── */}
+      {deleteModal && (
+        <div
+          onClick={() => setDeleteModal(null)}
+          style={{
+            position: 'fixed', inset: 0, zIndex: 1000,
+            background: 'rgba(0,0,0,0.75)',
+            backdropFilter: 'blur(8px)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            padding: 20,
+          }}
+        >
+          <motion.div
+            initial={{ scale: 0.85, opacity: 0, y: 24 }}
+            animate={{ scale: 1, opacity: 1, y: 0 }}
+            exit={{ scale: 0.85, opacity: 0, y: 24 }}
+            transition={{ type: 'spring', damping: 22, stiffness: 320 }}
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              background: 'linear-gradient(145deg, #1a1a2e 0%, #16213e 100%)',
+              border: '1px solid rgba(239,68,68,0.25)',
+              borderRadius: 24,
+              padding: 36,
+              width: '100%',
+              maxWidth: 440,
+              boxShadow: '0 32px 80px rgba(0,0,0,0.6), 0 0 0 1px rgba(239,68,68,0.1), inset 0 1px 0 rgba(255,255,255,0.05)',
+              position: 'relative',
+              overflow: 'hidden',
+            }}
+          >
+            {/* Red glow background accent */}
+            <div style={{
+              position: 'absolute', top: -60, right: -60,
+              width: 200, height: 200, borderRadius: '50%',
+              background: 'radial-gradient(circle, rgba(239,68,68,0.15) 0%, transparent 70%)',
+              pointerEvents: 'none',
+            }} />
+
+            {/* Warning Icon */}
+            <div style={{
+              width: 64, height: 64, borderRadius: 18,
+              background: 'rgba(239,68,68,0.12)',
+              border: '1px solid rgba(239,68,68,0.3)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              marginBottom: 24,
+              boxShadow: '0 0 24px rgba(239,68,68,0.15)',
+            }}>
+              <Trash2 style={{ width: 28, height: 28, color: '#ef4444' }} />
+            </div>
+
+            {/* Title */}
+            <h3 style={{
+              color: '#ffffff',
+              fontSize: 22,
+              fontWeight: 800,
+              fontFamily: 'Space Grotesk, sans-serif',
+              margin: '0 0 10px',
+              lineHeight: 1.2,
+            }}>
+              Delete Student Record
+            </h3>
+
+            {/* Student info pill */}
+            <div style={{
+              display: 'inline-flex', alignItems: 'center', gap: 10,
+              padding: '8px 16px', borderRadius: 12,
+              background: 'rgba(255,255,255,0.05)',
+              border: '1px solid rgba(255,255,255,0.1)',
+              marginBottom: 16,
+            }}>
+              <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'linear-gradient(135deg,#4f46e5,#7c3aed)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 800, color: '#fff', flexShrink: 0 }}>
+                {deleteModal.student.name?.[0]?.toUpperCase() || '?'}
+              </div>
+              <div>
+                <p style={{ color: '#f3f4f6', fontWeight: 700, fontSize: 15, margin: 0, lineHeight: 1.2 }}>{deleteModal.student.name}</p>
+                <p style={{ color: '#6b7280', fontSize: 13, margin: 0 }}>{deleteModal.student.mobile} · Group {deleteModal.student.groupNumber || deleteModal.student.group_number}</p>
+              </div>
+            </div>
+
+            {/* Warning message */}
+            <p style={{ color: '#9ca3af', fontSize: 15, lineHeight: 1.6, margin: '0 0 28px' }}>
+              This action is <strong style={{ color: '#fca5a5' }}>permanent and cannot be undone</strong>. The student's group slot will be freed up.
+            </p>
+
+            {/* Action buttons */}
+            <div style={{ display: 'flex', gap: 12 }}>
+              <button
+                onClick={() => setDeleteModal(null)}
+                disabled={actionLoading}
+                style={{
+                  flex: 1, height: 50, borderRadius: 14,
+                  border: '1px solid rgba(255,255,255,0.12)',
+                  background: 'rgba(255,255,255,0.06)',
+                  color: '#e5e7eb', fontSize: 15, fontWeight: 700,
+                  cursor: 'pointer', transition: 'all 0.15s',
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'}
+                onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.06)'}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDelete}
+                disabled={actionLoading}
+                style={{
+                  flex: 1, height: 50, borderRadius: 14,
+                  border: 'none',
+                  background: actionLoading
+                    ? 'rgba(239,68,68,0.4)'
+                    : 'linear-gradient(135deg, #dc2626, #ef4444)',
+                  color: '#ffffff', fontSize: 15, fontWeight: 800,
+                  cursor: actionLoading ? 'not-allowed' : 'pointer',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                  boxShadow: actionLoading ? 'none' : '0 4px 20px rgba(239,68,68,0.4)',
+                  transition: 'all 0.15s',
+                }}
+                onMouseEnter={(e) => { if (!actionLoading) e.currentTarget.style.transform = 'translateY(-1px)'; }}
+                onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)' }
+              >
+                {actionLoading ? (
+                  <><div style={{ width: 16, height: 16, border: '2px solid rgba(255,255,255,0.4)', borderTopColor: '#fff', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} /> Deleting...</>
+                ) : (
+                  <><Trash2 style={{ width: 16, height: 16 }} /> Delete Student</>
+                )}
+              </button>
+            </div>
+          </motion.div>
+        </div>
+      )}
 
       <Modal isOpen={!!editModal} onClose={() => setEditModal(null)} title="Edit Student Record">
         <div className="space-y-[24px] mb-6">
