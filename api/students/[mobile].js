@@ -1,27 +1,15 @@
-const mongoose = require('mongoose');
+const connectDB = require('../../backend/config/db');
+const Student = require('../../backend/models/Student');
+const jwt = require('jsonwebtoken');
 
-const DEFAULT_ATLAS_URI =
-  'mongodb+srv://kingofkalilinux404_db_user:DaJJhVwpk9qCsjgp@cluster0.x7m7owd.mongodb.net/freshers_group_generator?retryWrites=true&w=majority';
-
-const studentSchema = new mongoose.Schema(
-  {
-    name: { type: String, required: true, trim: true },
-    department: { type: String, required: true, trim: true },
-    mobile: { type: String, required: true, unique: true, trim: true },
-    groupNumber: { type: Number, required: true },
-    registeredDate: { type: String },
-    registeredTime: { type: String },
-  },
-  { timestamps: true }
-);
-
-const Student = mongoose.models.Student || mongoose.model('Student', studentSchema);
-
-async function connectDB() {
-  if (mongoose.connection.readyState !== 1) {
-    await mongoose.connect(process.env.MONGODB_URI || DEFAULT_ATLAS_URI, {
-      serverSelectionTimeoutMS: 10000,
-    });
+function verifyToken(req) {
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith('Bearer ')) return null;
+  const token = authHeader.split(' ')[1];
+  try {
+    return jwt.verify(token, process.env.JWT_SECRET || 'freshers_super_secret_2026_change_me');
+  } catch {
+    return null;
   }
 }
 
@@ -36,11 +24,22 @@ module.exports = async (req, res) => {
 
   if (req.method === 'OPTIONS') return res.status(200).end();
 
+  // Verify auth for DELETE and PUT
+  if (req.method === 'DELETE' || req.method === 'PUT') {
+    const decoded = verifyToken(req);
+    if (!decoded) {
+      return res.status(401).json({ success: false, message: 'Access denied. No token provided.' });
+    }
+  }
+
   try {
     await connectDB();
 
-    const { mobile } = req.query;
-    if (!mobile) return res.status(400).json({ success: false, message: 'Mobile number parameter is required' });
+    // Vercel passes the dynamic segment as req.query.mobile for [mobile].js
+    const mobile = req.query.mobile;
+    if (!mobile) {
+      return res.status(400).json({ success: false, message: 'Mobile number is required' });
+    }
 
     const cleanMobile = String(mobile).trim();
 
@@ -55,11 +54,11 @@ module.exports = async (req, res) => {
     if (req.method === 'PUT') {
       const { name, department } = req.body || {};
       const student = await Student.findOne({ mobile: cleanMobile });
-      if (!student) return res.status(404).json({ success: false, message: 'Student record not found' });
-
+      if (!student) {
+        return res.status(404).json({ success: false, message: 'Student record not found' });
+      }
       if (name) student.name = String(name).trim();
       if (department) student.department = String(department).trim();
-
       await student.save();
       return res.status(200).json({ success: true, message: 'Student record updated successfully', data: student });
     }

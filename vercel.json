@@ -4,7 +4,8 @@
   "functions": {
     "api/index.js": {
       "memory": 1024,
-      "maxDuration": 30
+      "maxDuration": 30,
+      "includeFiles": "backend/**"
     }
   },
   "rewrites": [
@@ -13,7 +14,7 @@
       "destination": "/api/index.js"
     },
     {
-      "source": "/:path((?!api|assets|.*\\.[a-z]{2,4}$).*)",
+      "source": "/:path*",
       "destination": "/index.html"
     }
   ]

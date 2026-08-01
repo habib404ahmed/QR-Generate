@@ -6,21 +6,15 @@ const authRoutes = require('../backend/routes/auth');
 const settingsRoutes = require('../backend/routes/settings');
 const studentRoutes = require('../backend/routes/students');
 const networkRoutes = require('../backend/routes/network');
+const errorHandler = require('../backend/middleware/errorHandler');
 
 const app = express();
 
 app.use(helmet({ crossOriginResourcePolicy: false }));
 app.use(cors({ origin: true, credentials: true }));
+app.options('*', cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
-// URL normalization for Vercel
-app.use((req, res, next) => {
-  if (req.url && !req.url.startsWith('/api')) {
-    req.url = '/api' + (req.url.startsWith('/') ? req.url : '/' + req.url);
-  }
-  next();
-});
 
 // Auto DB connection middleware
 app.use(async (req, res, next) => {
@@ -42,5 +36,12 @@ app.use('/api/auth', authRoutes);
 app.use('/api/settings', settingsRoutes);
 app.use('/api/students', studentRoutes);
 app.use('/api/network', networkRoutes);
+
+// 404 fallback for unmatched API routes
+app.use((req, res, next) => {
+  res.status(404).json({ success: false, message: `Route not found: ${req.method} ${req.url}` });
+});
+
+app.use(errorHandler);
 
 module.exports = app;
