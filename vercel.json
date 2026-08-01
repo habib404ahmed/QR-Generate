@@ -19,8 +19,8 @@
       "dest": "/api/$1"
     },
     {
-      "src": "/((?!assets|.*\\..*).*)",
-      "dest": "/frontend/index.html"
+      "src": "/((?!api|assets|.*\\..*).*)",
+      "dest": "/index.html"
     }
   ]
 }
