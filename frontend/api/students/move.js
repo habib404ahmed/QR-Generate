@@ -48,7 +48,10 @@ module.exports = async (req, res) => {
 
   if (req.method === 'OPTIONS') return res.status(200).end();
 
-  // Require JWT for DELETE and PUT
+  if (req.method !== 'POST') {
+    return res.status(405).json({ success: false, message: 'Method Not Allowed' });
+  }
+
   const decoded = verifyToken(req);
   if (!decoded) {
     return res.status(401).json({ success: false, message: 'Access denied. No token provided.' });
@@ -57,41 +60,25 @@ module.exports = async (req, res) => {
   try {
     await connectDB();
 
-    // Vercel passes [mobile] dynamic segment as req.query.mobile
-    const mobile = req.query.mobile;
-    if (!mobile) {
-      return res.status(400).json({ success: false, message: 'Mobile number is required' });
+    const { mobile, newGroupNumber } = req.body || {};
+    if (!mobile || !newGroupNumber) {
+      return res.status(400).json({ success: false, message: 'Mobile and newGroupNumber are required' });
     }
 
-    const cleanMobile = String(mobile).trim();
-
-    if (req.method === 'DELETE') {
-      const student = await Student.findOneAndDelete({ mobile: cleanMobile });
-      if (!student) {
-        return res.status(404).json({ success: false, message: 'Student record not found' });
-      }
-      return res.status(200).json({ success: true, message: 'Student record deleted successfully' });
+    const student = await Student.findOne({ mobile: String(mobile).trim() });
+    if (!student) {
+      return res.status(404).json({ success: false, message: 'Student record not found' });
     }
 
-    if (req.method === 'PUT') {
-      const { name, department } = req.body || {};
-      const student = await Student.findOne({ mobile: cleanMobile });
-      if (!student) {
-        return res.status(404).json({ success: false, message: 'Student record not found' });
-      }
-      if (name) student.name = String(name).trim();
-      if (department) student.department = String(department).trim();
-      await student.save();
-      return res.status(200).json({
-        success: true,
-        message: 'Student record updated successfully',
-        data: student,
-      });
-    }
+    student.groupNumber = Number(newGroupNumber);
+    await student.save();
 
-    return res.status(405).json({ success: false, message: 'Method Not Allowed' });
+    return res.status(200).json({
+      success: true,
+      message: `Moved ${student.name} to Group ${student.groupNumber}`,
+    });
   } catch (err) {
-    console.error('[Student Mobile Action Error]', err);
+    console.error('[Move Student Error]', err);
     return res.status(500).json({ success: false, message: err.message || 'Internal Server Error' });
   }
 };
