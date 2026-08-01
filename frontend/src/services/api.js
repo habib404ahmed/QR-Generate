@@ -55,7 +55,7 @@ export const authAPI = {
 // ─── Students ─────────────────────────────────────────────────────────────────
 export const studentsAPI = {
   register: (data) => api.post('students/register', data),
-  getAll: () => api.get('students'),
+  getAll: (params) => api.get('students', { params }),
   update: (mobile, data) => api.put(`students/${mobile}`, data),
   delete: (mobile) => api.delete(`students/${mobile}`),
   move: (mobile, newGroupNumber) => api.post('students/move', { mobile, newGroupNumber }),
