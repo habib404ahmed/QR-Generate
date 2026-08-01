@@ -1,10 +1,9 @@
-// Success Page — Huge Group Number Reveal with Confetti & Animations
-// Spec: 🎉 Registration Successful, Your Group Is, Huge 90px Desktop / 70px Mobile number
+// Success Page — Premium Responsive Group Number Reveal with Confetti & Glassmorphism
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useEffect } from 'react';
 import { motion } from 'framer-motion';
 import confetti from 'canvas-confetti';
-import { ShieldCheck, Home, AlertCircle } from 'lucide-react';
+import { ShieldCheck, Home, AlertCircle, Sparkles, Camera, CheckCircle2 } from 'lucide-react';
 import Button from '../components/ui/Button';
 
 export default function SuccessPage() {
@@ -17,23 +16,23 @@ export default function SuccessPage() {
     if (!groupNumber) return;
 
     // Trigger multi-stage confetti
-    const duration = 3 * 1000;
+    const duration = 3.5 * 1000;
     const end = Date.now() + duration;
 
     const frame = () => {
       confetti({
-        particleCount: 5,
+        particleCount: 6,
         angle: 60,
-        spread: 60,
-        origin: { x: 0 },
-        colors: ['#3b82f6', '#8b5cf6', '#ec4899', '#10b981'],
+        spread: 70,
+        origin: { x: 0, y: 0.6 },
+        colors: ['#6366f1', '#8b5cf6', '#ec4899', '#10b981', '#3b82f6'],
       });
       confetti({
-        particleCount: 5,
+        particleCount: 6,
         angle: 120,
-        spread: 60,
-        origin: { x: 1 },
-        colors: ['#3b82f6', '#8b5cf6', '#ec4899', '#10b981'],
+        spread: 70,
+        origin: { x: 1, y: 0.6 },
+        colors: ['#6366f1', '#8b5cf6', '#ec4899', '#10b981', '#3b82f6'],
       });
       if (Date.now() < end) requestAnimationFrame(frame);
     };
@@ -66,7 +65,7 @@ export default function SuccessPage() {
   if (!groupNumber) {
     return (
       <div className="min-h-screen animated-bg flex items-center justify-center p-4 sm:p-6">
-        <div className="glass-strong rounded-[24px] p-8 sm:p-10 max-w-md w-full text-center border border-white/15 shadow-2xl">
+        <div className="glass-strong rounded-[24px] p-6 sm:p-10 max-w-md w-full text-center border border-white/15 shadow-2xl">
           <div className="w-16 h-16 rounded-2xl bg-amber-500/20 text-amber-400 flex items-center justify-center mx-auto mb-4 border border-amber-500/40">
             <AlertCircle className="w-8 h-8" />
           </div>
@@ -85,71 +84,85 @@ export default function SuccessPage() {
   }
 
   return (
-    <div className="min-h-screen animated-bg flex flex-col items-center justify-center p-4 sm:p-6 relative overflow-hidden">
+    <div className="min-h-screen animated-bg flex flex-col items-center justify-center p-3 sm:p-6 relative overflow-hidden">
       {/* Background glow orbs */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-indigo-600/25 rounded-full blur-[140px] pointer-events-none" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[320px] sm:w-[600px] h-[320px] sm:h-[600px] bg-indigo-600/25 rounded-full blur-[100px] sm:blur-[140px] pointer-events-none" />
 
       <motion.div
-        initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ type: 'spring', damping: 20, stiffness: 200 }}
-        className="w-[92%] max-w-[440px] sm:w-full sm:max-w-[580px] relative z-10 my-auto"
+        initial={{ opacity: 0, scale: 0.92, y: 15 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        transition={{ type: 'spring', damping: 22, stiffness: 220 }}
+        className="w-full max-w-[420px] sm:max-w-[540px] relative z-10 my-auto"
       >
-        <div className="glass-strong rounded-[24px] p-[28px] sm:p-[44px] text-center shadow-2xl border border-white/20 relative overflow-hidden">
-          {/* Header Title */}
+        <div className="glass-strong rounded-[24px] sm:rounded-[32px] p-5 sm:p-10 text-center shadow-[0_20px_60px_rgba(0,0,0,0.6)] border border-white/20 relative overflow-hidden backdrop-blur-xl">
+          {/* Top Status Pill */}
           <motion.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-2xl sm:text-3xl font-extrabold text-white mb-2"
-            style={{ fontFamily: 'Space Grotesk, sans-serif' }}
+            className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-500/15 border border-emerald-500/35 text-emerald-400 text-xs font-semibold mb-4"
           >
-            🎉 Registration Successful
+            <CheckCircle2 className="w-3.5 h-3.5" />
+            <span>{alreadyRegistered ? 'Registration Status: Active' : 'Registration Complete'}</span>
           </motion.div>
 
-          <p className="text-indigo-300 text-base font-semibold mb-6">
-            Welcome, <span className="text-white font-bold">{name || 'Fresher'}</span>! {alreadyRegistered && '(Already Registered)'}
+          {/* Header Title */}
+          <motion.h1
+            initial={{ opacity: 0, y: -5 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-2xl sm:text-4xl font-extrabold text-white mb-2 tracking-tight flex items-center justify-center gap-2"
+            style={{ fontFamily: 'Space Grotesk, sans-serif' }}
+          >
+            <Sparkles className="w-6 h-6 text-amber-400 flex-shrink-0" />
+            <span>Registration Successful</span>
+          </motion.h1>
+
+          <p className="text-slate-300 text-sm sm:text-base font-medium mb-5">
+            Welcome, <span className="text-indigo-300 font-bold">{name || 'Fresher'}</span>!
           </p>
 
           {/* Subtitle */}
-          <p className="text-slate-400 text-sm uppercase tracking-widest font-bold mb-3">
-            Your Group Is
+          <p className="text-indigo-400/90 text-xs sm:text-sm uppercase tracking-widest font-extrabold mb-3">
+            YOUR ASSIGNED GROUP IS
           </p>
 
-          {/* Huge Group Number (90px Desktop / 70px Mobile) with Float Effect & Glow */}
+          {/* Group Number Card — Fully Fluid & Scaled for Mobile */}
           <motion.div
-            initial={{ scale: 0.6, opacity: 0 }}
+            initial={{ scale: 0.85, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
-            transition={{ type: 'spring', damping: 15, stiffness: 180, delay: 0.15 }}
-            className="animate-float my-4 py-6 px-4 rounded-[20px] bg-gradient-to-br from-indigo-950/80 via-purple-950/60 to-slate-950/90 border border-indigo-500/40 shadow-[0_0_60px_rgba(99,102,241,0.45)] relative overflow-hidden"
+            transition={{ type: 'spring', damping: 16, stiffness: 200, delay: 0.1 }}
+            className="my-3 py-5 sm:py-7 px-3 sm:px-6 rounded-[20px] sm:rounded-[24px] bg-gradient-to-br from-indigo-950/90 via-purple-950/80 to-slate-950/95 border border-indigo-500/50 shadow-[0_0_50px_rgba(99,102,241,0.4)] relative overflow-hidden"
           >
-            <div className="absolute top-0 right-0 w-36 h-36 bg-indigo-500/15 rounded-full blur-2xl pointer-events-none" />
-            <h1
-              className="text-[70px] sm:text-[90px] font-black gradient-text tracking-tight leading-none"
+            <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/20 rounded-full blur-2xl pointer-events-none" />
+            <div className="absolute bottom-0 left-0 w-32 h-32 bg-purple-500/20 rounded-full blur-2xl pointer-events-none" />
+
+            <h2
+              className="text-[44px] xs:text-[54px] sm:text-[76px] font-black gradient-text tracking-tight leading-none whitespace-nowrap"
               style={{ fontFamily: 'Space Grotesk, sans-serif' }}
             >
               GROUP {groupNumber}
-            </h1>
+            </h2>
           </motion.div>
 
-          {/* Guidance Info Box */}
-          <div className="p-4 rounded-[16px] bg-slate-950/70 border border-slate-800/90 text-left text-xs text-slate-300 space-y-2 my-6">
-            <div className="flex items-center gap-2 font-bold text-slate-200">
-              <ShieldCheck className="w-4 h-4 text-indigo-400" />
-              <span>Mentorship Station Notice</span>
+          {/* Screenshot Hint Box */}
+          <div className="mt-4 mb-5 p-3.5 sm:p-4 rounded-[16px] bg-indigo-950/40 border border-indigo-500/25 text-left text-xs sm:text-sm text-slate-300 space-y-1.5">
+            <div className="flex items-center gap-2 font-bold text-indigo-300">
+              <Camera className="w-4 h-4 text-indigo-400 flex-shrink-0" />
+              <span>Take a Screenshot Now</span>
             </div>
-            <p className="text-slate-400 leading-relaxed">
-              Please take a screenshot of this page. Show this group number at the entrance desk to join your assigned group mentor.
+            <p className="text-slate-400 text-xs leading-relaxed">
+              Show this group number at the entrance desk to join your assigned group mentor.
             </p>
           </div>
 
-          {/* Home Button */}
+          {/* Back Button */}
           <Button
             onClick={() => navigate('/')}
             variant="secondary"
             fullWidth
             size="lg"
+            className="!py-3.5 text-sm sm:text-base font-bold shadow-lg"
           >
-            <Home className="w-5 h-5" />
+            <Home className="w-4 h-4 sm:w-5 sm:h-5" />
             <span>Back to Registration</span>
           </Button>
         </div>
